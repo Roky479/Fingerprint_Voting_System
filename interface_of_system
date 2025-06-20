@@ -1,0 +1,64 @@
+import tkinter as tk
+from tkinter import messagebox
+
+# Simulated fingerprint database
+registered_fingerprints = {"fp001", "fp002", "fp003", "fp004"}
+voted_fingerprints = set()
+
+candidates = {
+    "Alice": 0,
+    "Bob": 0,
+    "Charlie": 0
+}
+
+current_fp_id = None
+
+def check_fingerprint():
+    global current_fp_id
+    fp_id = entry_fp.get().strip()
+    
+    if fp_id in registered_fingerprints:
+        if fp_id in voted_fingerprints:
+            messagebox.showwarning("Already Voted", "This fingerprint has already voted.")
+        else:
+            current_fp_id = fp_id
+            frame_fingerprint.pack_forget()
+            frame_vote.pack()
+    else:
+        messagebox.showerror("Access Denied", "Fingerprint not recognized.")
+
+def vote(candidate_name):
+    global current_fp_id
+    candidates[candidate_name] += 1
+    voted_fingerprints.add(current_fp_id)
+    messagebox.showinfo("Vote Cast", f"Thank you for voting for {candidate_name}!")
+    frame_vote.pack_forget()
+    frame_fingerprint.pack()
+    entry_fp.delete(0, tk.END)
+
+def show_results():
+    results = "\n".join([f"{name}: {count} vote(s)" for name, count in candidates.items()])
+    messagebox.showinfo("Voting Results", results)
+
+# GUI Setup
+root = tk.Tk()
+root.title("Fingerprint Voting System")
+root.geometry("300x300")
+
+# Fingerprint input frame
+frame_fingerprint = tk.Frame(root)
+tk.Label(frame_fingerprint, text="Enter Fingerprint ID:").pack(pady=10)
+entry_fp = tk.Entry(frame_fingerprint)
+entry_fp.pack()
+tk.Button(frame_fingerprint, text="Submit", command=check_fingerprint).pack(pady=10)
+tk.Button(frame_fingerprint, text="Show Results", command=show_results).pack(pady=10)
+frame_fingerprint.pack()
+
+# Voting frame (hidden until fingerprint is valid)
+frame_vote = tk.Frame(root)
+tk.Label(frame_vote, text="Choose a Candidate:").pack(pady=10)
+
+for name in candidates:
+    tk.Button(frame_vote, text=name, width=15, command=lambda n=name: vote(n)).pack(pady=5)
+
+root.mainloop()
